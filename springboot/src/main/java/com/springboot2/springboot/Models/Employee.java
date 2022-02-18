@@ -1,11 +1,18 @@
 package com.springboot2.springboot.Models;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import java.util.Objects;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 
 @Entity
 public class Employee {
@@ -13,22 +20,34 @@ public class Employee {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @Column(length = 25,nullable = false)
+    @Column(length = 25, nullable = false)
     private String firstName;
 
-    @Column(length = 25,nullable = false)
+    @Column(length = 25, nullable = false)
     private String lastName;
 
-    @Column(length = 10,nullable = false, unique = true)
-    private String employeeId;
+    @Column(length = 10, nullable = false, unique = true)
+    private String employeeid;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name="id_role")
+    private Role role;
+
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "employee_project",
+            joinColumns = { @JoinColumn(name = "employee_id") },
+            inverseJoinColumns = { @JoinColumn(name = "project_id") })
+    private List<Project> projects = new ArrayList<Project>();
 
     public Employee() {
     }
 
-    public Employee(String firstName, String lastName, String employeeId) {
+
+    public Employee(String firstName, String lastName, String employeeid, Role role) {
         this.firstName = firstName;
         this.lastName = lastName;
-        this.employeeId = employeeId;
+        this.employeeid = employeeid;
+        this.role = role;
     }
 
     public Long getId() {
@@ -55,34 +74,60 @@ public class Employee {
         this.lastName = lastName;
     }
 
-    public String getEmployeeId() {
-        return employeeId;
+    public String getEmployeeid() {
+        return employeeid;
     }
 
-    public void setEmployeeId(String employeeId) {
-        this.employeeId = employeeId;
+    public void setEmployeeid(String employeeid) {
+        this.employeeid = employeeid;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Employee employee = (Employee) o;
-        return id.equals(employee.id);
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id);
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((id == null) ? 0 : id.hashCode());
+        return result;
+    }
+
+    public List<Project> getProjects() {
+        return projects;
+    }
+
+    public void setProjects(List<Project> projects) {
+        this.projects = projects;
+    }
+
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        Employee other = (Employee) obj;
+        if (id == null) {
+            if (other.id != null)
+                return false;
+        } else if (!id.equals(other.id))
+            return false;
+        return true;
     }
 
     @Override
     public String toString() {
-        return "Employee{" +
-                "ID=" + id +
-                ", First Name='" + firstName + '\'' +
-                ", Last Name='" + lastName + '\'' +
-                ", Employee Id='" + employeeId + '\'' +
-                '}';
+        return "Employee [employeeid=" + employeeid + ", firstName=" + firstName + ", id=" + id + ", lastName="
+                + lastName + "]";
     }
+
 }
