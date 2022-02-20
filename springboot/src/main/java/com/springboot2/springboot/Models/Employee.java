@@ -42,11 +42,7 @@ public class Employee {
     public Employee() {
     }
 
-    public Employee(String firstName, String lastName, String employeeid) {
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.employeeid = employeeid;
-    }
+
 
     public Employee(String firstName, String lastName, String employeeid, Role role) {
         this.firstName = firstName;

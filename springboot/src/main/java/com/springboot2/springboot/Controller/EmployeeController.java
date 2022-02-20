@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-@CrossOrigin(origins = "http://localhost:8080")
 @RestController
 @RequestMapping("/")
 public class EmployeeController {
@@ -21,16 +20,24 @@ public class EmployeeController {
     IEmployeeJpaRepository employeeJpaRepository;
 
     //Obtener todos los empleados
-    @GetMapping("/employee")
-    public ArrayList<Employee> getAllEmployees() {
-        return (ArrayList<Employee>) employeeJpaRepository.findAll();
+    @GetMapping("/")
+    public ResponseEntity<List<Employee>> getEmployees(){
+        try {
+            List<Employee> employee1 = new ArrayList<Employee>();
+            employeeJpaRepository.findAll().forEach(employee1::add);
+            if (employee1.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            }
+            return new ResponseEntity<>(employee1, HttpStatus.OK);
+        } catch (Exception e){
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     //Obtener empleados por id
-    @GetMapping("/employee/{id}")
-    public ResponseEntity<Employee> getEmployeeById(@PathVariable("id") long id) {
+    @GetMapping("{id}")
+    public ResponseEntity<Employee> getEmployeeById(@PathVariable("id") long id){
         Optional<Employee> employeeData = employeeJpaRepository.findById(id);
-
         if (employeeData.isPresent()) {
             return new ResponseEntity<>(employeeData.get(), HttpStatus.OK);
         } else {
@@ -39,44 +46,44 @@ public class EmployeeController {
     }
 
     //Creo un nuevo empleado
-    @PostMapping("/employee")
-    public ResponseEntity<Employee> createEmployee(@RequestBody Employee employee) {
-        try {
-            Employee _employee = employeeJpaRepository
-                    .save(new Employee(employee.getFirstName(), employee.getLastName(), employee.getEmployeeid()));
-            return new ResponseEntity<>(_employee, HttpStatus.CREATED);
-        } catch (Exception e) {
+    @PostMapping("/add")
+    public ResponseEntity<Employee> addNewEmployee(@RequestBody Employee employee){
+        try{
+            Employee employee1 = employeeJpaRepository.save(new Employee(employee.getFirstName(),
+                    employee.getLastName(), employee.getEmployeeid(), employee.getRole()));
+            return new ResponseEntity<>(employee1, HttpStatus.CREATED);
+        } catch (Exception e){
             return new ResponseEntity<>(null, HttpStatus.EXPECTATION_FAILED);
         }
     }
 
     //Actualizar datos de empleado
-    @PutMapping("/employee/{id}")
+    @PutMapping("/update/{id}")
     public ResponseEntity<Employee> updateEmployee(@PathVariable("id") long id, @RequestBody Employee employee) {
-        Optional<Employee> employeeData = employeeJpaRepository.findById(id);
+        Optional<Employee> employee1 = employeeJpaRepository.findById(id);
 
-        if (employeeData.isPresent()) {
-            Employee _employee = employeeData.get();
-            _employee.setFirstName(employee.getFirstName());
-            _employee.setLastName(employee.getLastName());
-            _employee.setEmployeeid(employee.getEmployeeid());
-            _employee.setRole(employee.getRole());
-            return new ResponseEntity<>(employeeJpaRepository.save(_employee), HttpStatus.OK);
+        if (employee1.isPresent()) {
+            Employee employee_ = employee1.get();
+            employee_.setFirstName(employee.getFirstName());
+            employee_.setLastName(employee.getLastName());
+            employee_.setEmployeeid(employee.getEmployeeid());
+            employee_.setRole(employee.getRole());
+            // employee_.setProjects(employee.getProjects());
+            return new ResponseEntity<>(employeeJpaRepository.save(employee_), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
 
-    //Eliminar todos los empleados
-    @DeleteMapping("/employees")
-    public ResponseEntity<HttpStatus> deleteAllEmployees() {
+    //Eliminar empleado por id
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<String> deleteEmployee(@PathVariable("id") long id) {
         try {
-            employeeJpaRepository.deleteAll();
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            employeeJpaRepository.deleteById(id);
+            return new ResponseEntity<>("Employee delete",HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.EXPECTATION_FAILED);
         }
-
     }
 
 }
